@@ -1,6 +1,7 @@
 import 'package:expense_app/data/local/model/user_model.dart';
 import 'package:expense_app/ui/sign_up/bloc/user_bloc.dart';
 import 'package:expense_app/ui/sign_up/bloc/user_event.dart';
+import 'package:expense_app/ui/sign_up/bloc/user_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -15,6 +16,7 @@ class SignUpScreen extends StatefulWidget {
 class _SignUpScreenState extends State<SignUpScreen> {
   bool obscurePassword = true;
   bool obscureConfirmPassword = true;
+  bool isLoading = false;
 
   final TextEditingController _name = TextEditingController();
   final TextEditingController _email = TextEditingController();
@@ -188,34 +190,66 @@ class _SignUpScreenState extends State<SignUpScreen> {
               textInputAction: TextInputAction.done,
             ),
             SizedBox(height: 20),
-            ElevatedButton(
-              child: Text("Register"),
-              onPressed: () {
-                if (_name.text.isNotEmpty &&
-                    _email.text.isNotEmpty &&
-                    _mobNo.text.isNotEmpty &&
-                    _pass.text.isNotEmpty &&
-                    _confPass.text.isNotEmpty) {
-                  if (_pass.text == _confPass.text) {
-                    UserModel user = UserModel(
-                      name: _name.text,
-                      email: _email.text,
-                      mobNo: _mobNo.text,
-                      pass: _pass.text,
-                    );
-                    context.read<UserBloc>().add(SignupEvent(user: user));
-                  } else {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text("Passwords does not match!!")),
-                    );
-                  }
-                } else {
+            BlocConsumer<UserBloc, UserState>(
+              listener: (context, state) {
+                if (state is UserInitialState) {
+                  isLoading = false;
+                } else if (state is UserLoadingState) {
+                  isLoading = true;
+                } else if (state is UserSuccessState) {
+                  isLoading = false;
+                  Navigator.pop(context);
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text("Please enter values in all fields!!"),
-                    ),
+                    SnackBar(content: Text("Registered successfully!!")),
                   );
+                } else if (state is UserFailureState) {
+                  isLoading = false;
+                  ScaffoldMessenger.of(
+                    context,
+                  ).showSnackBar(SnackBar(content: Text(state.errorMsg)));
                 }
+              },
+              builder: (context, state) {
+                return ElevatedButton(
+                  child:
+                      isLoading
+                          ? Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              CircularProgressIndicator(color: Colors.white),
+                              SizedBox(width: 20),
+                              Text("Registering..."),
+                            ],
+                          )
+                          : Text("Register"),
+                  onPressed: () {
+                    if (_name.text.isNotEmpty &&
+                        _email.text.isNotEmpty &&
+                        _mobNo.text.isNotEmpty &&
+                        _pass.text.isNotEmpty &&
+                        _confPass.text.isNotEmpty) {
+                      if (_pass.text == _confPass.text) {
+                        UserModel user = UserModel(
+                          name: _name.text,
+                          email: _email.text,
+                          mobNo: _mobNo.text,
+                          pass: _pass.text,
+                        );
+                        context.read<UserBloc>().add(SignupEvent(user: user));
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text("Passwords does not match!!")),
+                        );
+                      }
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text("Please enter values in all fields!!"),
+                        ),
+                      );
+                    }
+                  },
+                );
               },
             ),
             SizedBox(height: 20),

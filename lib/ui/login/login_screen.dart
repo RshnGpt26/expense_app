@@ -1,6 +1,10 @@
+import 'package:expense_app/ui/sign_up/bloc/user_bloc.dart';
+import 'package:expense_app/ui/sign_up/bloc/user_event.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../utils/routes/app_routes.dart';
+import '../sign_up/bloc/user_state.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -11,6 +15,24 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   bool obscurePassword = true;
+  bool isLoading = false;
+
+  final TextEditingController _email = TextEditingController();
+  final TextEditingController _password = TextEditingController();
+
+  bool isPasswordStrong(String password) {
+    final strongPasswordRegex = RegExp(
+      r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#\$&*~]).{8,}$',
+    );
+
+    return strongPasswordRegex.hasMatch(password);
+  }
+
+  bool isEmailValid(String email) {
+    final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+    return emailRegex.hasMatch(email);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -31,6 +53,7 @@ class _LoginScreenState extends State<LoginScreen> {
           children: [
             SizedBox(height: 25),
             TextField(
+              controller: _email,
               decoration: InputDecoration(
                 labelText: "Email",
                 labelStyle: TextStyle(
@@ -53,6 +76,7 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
             SizedBox(height: 15),
             TextField(
+              controller: _password,
               obscureText: obscurePassword,
               decoration: InputDecoration(
                 labelText: "Password",
@@ -100,10 +124,48 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
             ),
             SizedBox(height: 20),
-            ElevatedButton(
-              child: Text("Login"),
-              onPressed: () {
-                Navigator.pushNamed(context, AppRoutes.mainPage);
+            BlocConsumer<UserBloc, UserState>(
+              listener: (context, state) {
+                if (state is UserInitialState) {
+                  isLoading = false;
+                } else if (state is UserLoadingState) {
+                  isLoading = true;
+                } else if (state is UserSuccessState) {
+                  isLoading = false;
+                  Navigator.of(
+                    context,
+                  ).pushReplacementNamed(AppRoutes.mainPage);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text("Login successfully!!")),
+                  );
+                } else if (state is UserFailureState) {
+                  isLoading = false;
+                  ScaffoldMessenger.of(
+                    context,
+                  ).showSnackBar(SnackBar(content: Text(state.errorMsg)));
+                }
+              },
+              builder: (context, state) {
+                return ElevatedButton(
+                  child:
+                      isLoading
+                          ? Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              CircularProgressIndicator(color: Colors.white),
+                              SizedBox(width: 20),
+                              Text("Logging In..."),
+                            ],
+                          )
+                          : Text("Login"),
+                  onPressed: () {
+                    String email = _email.text.trim();
+                    String password = _password.text.trim();
+                    context.read<UserBloc>().add(
+                      LoginEvent(email: email, password: password),
+                    );
+                  },
+                );
               },
             ),
             SizedBox(height: 20),

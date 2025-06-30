@@ -1,8 +1,10 @@
 import 'dart:io';
 
 import 'package:expense_app/data/local/model/user_model.dart';
+import 'package:expense_app/utils/app_constants.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
 
 class DBHelper {
@@ -29,7 +31,7 @@ class DBHelper {
   static const String columnExpenseBalance = "e_balance";
   static const String columnExpenseCreatedAt = "e_created_at";
   static const String columnExpenseCatID = "e_cat_id";
-  static const String columnExpenseType = "e_type";
+  static const String columnExpenseType = "e_type"; // 1 => Debit && 2 => Credit
 
   Future<Database> initDB() async {
     mDB ??= await openDB();
@@ -61,14 +63,25 @@ class DBHelper {
     return rowsAffected > 0;
   }
 
-  Future<bool> authenticateUser({required UserModel user}) async {
+  Future<bool> authenticateUser({
+    required String email,
+    required String password,
+  }) async {
     var db = await initDB();
-    List<Map<String, dynamic>> users = await db.query(
+    List<Map<String, dynamic>> responseUsers = await db.query(
       tableUser,
-      where: "$columnUserEmail = ? AND $columnUserEmail = ?",
-      whereArgs: [user.email, user.pass],
+      where: "$columnUserEmail = ? AND $columnUserPassword = ?",
+      whereArgs: [email, password],
     );
-    return users.isNotEmpty;
+    if (responseUsers.isNotEmpty) {
+      SharedPreferences pref = await SharedPreferences.getInstance();
+      pref.setInt(
+        AppConstants.prefUserIdKey,
+        responseUsers[0][columnUserID] ?? 0,
+      );
+    }
+
+    return responseUsers.isNotEmpty;
   }
 
   fetchUsers() async {

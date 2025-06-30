@@ -1,3 +1,4 @@
+import 'package:expense_app/utils/routes/app_routes.dart';
 import 'package:flutter/material.dart';
 
 import '../statistic/statistic_screen.dart';
@@ -30,6 +31,14 @@ class _MainScreenState extends State<MainScreen> {
                   ),
                 ),
               ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.of(context).pushNamed(AppRoutes.addExpensePage);
+        },
+        backgroundColor: Colors.indigo,
+        foregroundColor: Colors.white,
+        child: Icon(Icons.add),
+      ),
       bottomNavigationBar: BottomNavigationBar(
         backgroundColor: Colors.lightBlue.shade100,
         selectedItemColor: Colors.indigo,

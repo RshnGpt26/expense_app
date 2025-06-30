@@ -1,4 +1,7 @@
+import 'package:expense_app/utils/app_constants.dart';
+import 'package:expense_app/utils/routes/app_routes.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class HomeScreen extends StatelessWidget {
   HomeScreen({super.key});
@@ -56,11 +59,103 @@ class HomeScreen extends StatelessWidget {
                       color: Colors.black,
                     ),
                   ),
-                  IconButton(
-                    onPressed: () {},
-                    icon: Icon(Icons.search),
-                    color: Colors.black,
-                    iconSize: 28,
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        onPressed: () {},
+                        icon: Icon(Icons.search),
+                        color: Colors.black,
+                        iconSize: 28,
+                      ),
+                      IconButton(
+                        onPressed: () {
+                          showModalBottomSheet(
+                            context: context,
+                            builder:
+                                (_) => Container(
+                                  height: 250,
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.only(
+                                      topLeft: Radius.circular(30),
+                                      topRight: Radius.circular(30),
+                                    ),
+                                  ),
+                                  padding: EdgeInsets.all(20),
+                                  child: Column(
+                                    children: [
+                                      Text(
+                                        "Logout",
+                                        style: TextStyle(
+                                          color: Colors.black,
+                                          fontSize: 26,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      SizedBox(height: 20),
+                                      Text(
+                                        "Are you sure. Do you want to logout?",
+                                        style: TextStyle(
+                                          color: Colors.black,
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                      SizedBox(height: 20),
+                                      Spacer(),
+                                      Row(
+                                        children: [
+                                          Expanded(
+                                            child: ElevatedButton(
+                                              style: ElevatedButton.styleFrom(
+                                                backgroundColor: Colors.red,
+                                              ),
+                                              onPressed: () async {
+                                                SharedPreferences prefs =
+                                                    await SharedPreferences.getInstance();
+                                                bool status = await prefs
+                                                    .setInt(
+                                                      AppConstants
+                                                          .prefUserIdKey,
+                                                      0,
+                                                    );
+                                                if (status) {
+                                                  Navigator.pop(context);
+                                                  Navigator.of(
+                                                    context,
+                                                  ).pushReplacementNamed(
+                                                    AppRoutes.loginPage,
+                                                  );
+                                                }
+                                              },
+                                              child: Text("YES"),
+                                            ),
+                                          ),
+                                          SizedBox(width: 20),
+                                          Expanded(
+                                            child: ElevatedButton(
+                                              style: ElevatedButton.styleFrom(
+                                                backgroundColor: Colors.green,
+                                              ),
+                                              onPressed: () {
+                                                Navigator.of(context).pop();
+                                              },
+                                              child: Text("NO"),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                          );
+                        },
+                        icon: Icon(Icons.logout),
+                        color: Colors.black,
+                        iconSize: 28,
+                      ),
+                    ],
                   ),
                 ],
               ),

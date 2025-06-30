@@ -1,3 +1,4 @@
+import 'package:expense_app/ui/add_expense/add_expense_screen.dart';
 import 'package:expense_app/ui/home/main_screen.dart';
 import 'package:flutter/widgets.dart';
 
@@ -10,11 +11,13 @@ class AppRoutes {
   static const String loginPage = "/login";
   static const String registerPage = "/register";
   static const String mainPage = "/main";
+  static const String addExpensePage = "/add-expense";
 
   static Map<String, Widget Function(BuildContext)> routes = {
     splashPage: (context) => SplashScreen(),
     loginPage: (context) => LoginScreen(),
     registerPage: (context) => SignUpScreen(),
     mainPage: (context) => MainScreen(),
+    addExpensePage: (context) => AddExpenseScreen(),
   };
 }
