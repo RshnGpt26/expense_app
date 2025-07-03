@@ -1,7 +1,11 @@
 import 'package:expense_app/data/local/model/category_model.dart';
 import 'package:expense_app/data/local/model/expense_model.dart';
+import 'package:expense_app/ui/home/expense_bloc/expense_bloc.dart';
+import 'package:expense_app/ui/home/expense_bloc/expense_event.dart';
+import 'package:expense_app/ui/home/expense_bloc/expense_state.dart';
 import 'package:expense_app/utils/app_constants.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -17,6 +21,8 @@ class AddExpenseScreen extends StatelessWidget {
   final List<String> typeList = ["Debit", "Credit"];
 
   final DateFormat dateFormat = DateFormat.yMMMEd();
+
+  bool isAdding = false;
 
   @override
   Widget build(BuildContext context) {
@@ -154,6 +160,9 @@ class AddExpenseScreen extends StatelessWidget {
             DropdownMenu(
               initialSelection: selectedType,
               width: MediaQuery.of(context).size.width - 40,
+              onSelected: (value) {
+                selectedType = value!;
+              },
               textStyle: TextStyle(
                 fontSize: 16,
                 color: Colors.black,
@@ -318,41 +327,78 @@ class AddExpenseScreen extends StatelessWidget {
               },
             ),
             SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () async {
-                if (_title.text.trim().isNotEmpty &&
-                    _desc.text.trim().isNotEmpty &&
-                    _amount.text.trim().isNotEmpty) {
-                  if (selectedCatIndex >= 0) {
-                    SharedPreferences pref =
-                        await SharedPreferences.getInstance();
-                    int userId =
-                        (pref.getInt(AppConstants.prefUserIdKey)) ?? -1;
-                    String createdAt =
-                        (selectedDate ?? DateTime.now()).microsecondsSinceEpoch
-                            .toString();
-                    ExpenseModel expense = ExpenseModel(
-                      userId: userId,
-                      title: _title.text.trim(),
-                      desc: _desc.text.trim(),
-                      amt: double.parse((_amount.text.trim())),
-                      bal: 0,
-                      catId: AppConstants.categories[selectedCatIndex].catId,
-                      createdAt: createdAt,
-                      type: selectedType == "Debit" ? 1 : 0,
-                    );
-                  } else {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text("Please select the Category!")),
-                    );
-                  }
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text("Please fill all the fields!")),
-                  );
+            BlocConsumer<ExpenseBloc, ExpenseState>(
+              listener: (context, state) {
+                if (state is ExpenseInitialState) {
+                  isAdding = false;
+                } else if (state is ExpenseAddingState) {
+                  isAdding = true;
+                } else if (state is ExpenseAddedState) {
+                  isAdding = false;
+                  context.read<ExpenseBloc>().add(ExpenseFetchEvent());
+                  Navigator.pop(context);
+                } else if (state is ExpenseAddFailedState) {
+                  isAdding = false;
+                  ScaffoldMessenger.of(
+                    context,
+                  ).showSnackBar(SnackBar(content: Text(state.errMsg)));
                 }
               },
-              child: Text("Add"),
+              builder: (context, state) {
+                return ElevatedButton(
+                  onPressed: () async {
+                    if (_title.text.trim().isNotEmpty &&
+                        _desc.text.trim().isNotEmpty &&
+                        _amount.text.trim().isNotEmpty) {
+                      if (selectedCatIndex >= 0) {
+                        SharedPreferences pref =
+                            await SharedPreferences.getInstance();
+                        int userId =
+                            (pref.getInt(AppConstants.prefUserIdKey)) ?? -1;
+                        String createdAt =
+                            (selectedDate ?? DateTime.now())
+                                .millisecondsSinceEpoch
+                                .toString();
+                        ExpenseModel expense = ExpenseModel(
+                          userId: userId,
+                          title: _title.text.trim(),
+                          desc: _desc.text.trim(),
+                          amt: _amount.text.trim(),
+                          bal: "0",
+                          catId:
+                              AppConstants.categories[selectedCatIndex].catId,
+                          createdAt: createdAt,
+                          type: selectedType == "Debit" ? 1 : 0,
+                        );
+                        context.read<ExpenseBloc>().add(
+                          ExpenseAddEvent(expense: expense),
+                        );
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text("Please select the Category!"),
+                          ),
+                        );
+                      }
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text("Please fill all the fields!")),
+                      );
+                    }
+                  },
+                  child:
+                      isAdding
+                          ? Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              CircularProgressIndicator(color: Colors.white),
+                              SizedBox(width: 5),
+                              Text("Adding..."),
+                            ],
+                          )
+                          : Text("Add"),
+                );
+              },
             ),
           ],
         ),

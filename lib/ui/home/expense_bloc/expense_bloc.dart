@@ -1,0 +1,33 @@
+import 'package:expense_app/ui/home/expense_bloc/expense_event.dart';
+import 'package:expense_app/ui/home/expense_bloc/expense_state.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import '../../../data/local/model/filtered_expense_model.dart';
+import '../../../data/local/repository/expense_repository.dart';
+import '../../../utils/app_constants.dart';
+
+class ExpenseBloc extends Bloc<ExpenseEvent, ExpenseState> {
+  ExpenseRepository expenseRepository;
+  ExpenseBloc({required this.expenseRepository})
+    : super(ExpenseInitialState()) {
+    on<ExpenseAddEvent>((event, emit) async {
+      emit(ExpenseAddingState());
+      bool check = await expenseRepository.addExpense(expense: event.expense);
+      if (check) {
+        emit(ExpenseAddedState());
+      } else {
+        emit(ExpenseAddFailedState(errMsg: "Expenses not added yet!!"));
+      }
+    });
+
+    on<ExpenseFetchEvent>((event, emit) async {
+      emit(ExpenseLoadingState());
+      SharedPreferences pref = await SharedPreferences.getInstance();
+      int userId = pref.getInt(AppConstants.prefUserIdKey) ?? -1;
+      List<FilteredExpenseModel> expenseList = await expenseRepository
+          .fetchUsersExpenses(userId: userId);
+      emit(ExpenseLoadedState(expenses: expenseList));
+    });
+  }
+}

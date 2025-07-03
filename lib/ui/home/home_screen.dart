@@ -1,43 +1,63 @@
+import 'package:expense_app/data/local/model/expense_model.dart';
+import 'package:expense_app/ui/home/expense_bloc/expense_bloc.dart';
+import 'package:expense_app/ui/home/expense_bloc/expense_event.dart';
+import 'package:expense_app/ui/home/expense_bloc/expense_state.dart';
 import 'package:expense_app/utils/app_constants.dart';
 import 'package:expense_app/utils/routes/app_routes.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class HomeScreen extends StatelessWidget {
-  HomeScreen({super.key});
+import '../../data/local/model/filtered_expense_model.dart';
 
-  final List<Map<String, dynamic>> expenseList = [
-    {
-      "date_time": "Tuesday, 14",
-      "expense": 1380,
-      "list": [
-        {
-          "type": "shop",
-          "title": "Shop",
-          "subtitle": "Buy new clothes",
-          "expense": 90,
-        },
-        {
-          "type": "electronic",
-          "title": "Electronic",
-          "subtitle": "Buy new iPhone 14",
-          "expense": 1290,
-        },
-      ],
-    },
-    {
-      "date_time": "Monday, 13",
-      "expense": 60,
-      "list": [
-        {
-          "type": "transportation",
-          "title": "Transportation",
-          "subtitle": "Trip to malang",
-          "expense": 60,
-        },
-      ],
-    },
-  ];
+class HomeScreen extends StatefulWidget {
+  const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  // final List<Map<String, dynamic>> expenseList = [
+  //   {
+  //     "date_time": "Tuesday, 14",
+  //     "expense": 1380,
+  //     "list": [
+  //       {
+  //         "type": "shop",
+  //         "title": "Shop",
+  //         "subtitle": "Buy new clothes",
+  //         "expense": 90,
+  //       },
+  //       {
+  //         "type": "electronic",
+  //         "title": "Electronic",
+  //         "subtitle": "Buy new iPhone 14",
+  //         "expense": 1290,
+  //       },
+  //     ],
+  //   },
+  //   {
+  //     "date_time": "Monday, 13",
+  //     "expense": 60,
+  //     "list": [
+  //       {
+  //         "type": "transportation",
+  //         "title": "Transportation",
+  //         "subtitle": "Trip to malang",
+  //         "expense": 60,
+  //       },
+  //     ],
+  //   },
+  // ];
+
+  bool isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    context.read<ExpenseBloc>().add(ExpenseFetchEvent());
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -320,128 +340,164 @@ class HomeScreen extends StatelessWidget {
                         ),
                       ),
                       SizedBox(height: 20),
-                      ListView.separated(
-                        shrinkWrap: true,
-                        physics: NeverScrollableScrollPhysics(),
-                        itemBuilder: (_, index) {
-                          Map<String, dynamic> expense = expenseList[index];
-                          return Container(
-                            padding: EdgeInsets.all(20),
-                            decoration: BoxDecoration(
-                              border: Border.all(color: Colors.grey, width: 1),
-                              borderRadius: BorderRadius.circular(5),
-                            ),
-                            child: Column(
-                              children: [
-                                Row(
-                                  children: [
-                                    Expanded(
-                                      child: Text(
-                                        expense["date_time"] ?? "",
-                                        style: TextStyle(
-                                          color: Colors.black,
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                      ),
+
+                      BlocBuilder<ExpenseBloc, ExpenseState>(
+                        // listener: (context, state) {
+                        //   if (state is ExpenseInitialState) {
+                        //     isLoading = false;
+                        //   } else if (state is ExpenseLoadingState) {
+                        //     isLoading = true;
+                        //   } else if (state is ExpenseLoadedState) {
+                        //     isLoading = false;
+                        //     state.expenses;
+                        //   }
+                        // },
+                        builder: (context, state) {
+                          if (state is ExpenseLoadingState) {
+                            return Center(child: CircularProgressIndicator());
+                          }
+                          if (state is ExpenseLoadedState) {
+                            if (state.expenses.isEmpty) {
+                              return Center(
+                                child: Text("Expenses not added Yet!!"),
+                              );
+                            }
+                            return ListView.separated(
+                              shrinkWrap: true,
+                              physics: NeverScrollableScrollPhysics(),
+                              itemBuilder: (_, index) {
+                                FilteredExpenseModel filteredExpense =
+                                    state.expenses[index];
+                                return Container(
+                                  padding: EdgeInsets.all(20),
+                                  decoration: BoxDecoration(
+                                    border: Border.all(
+                                      color: Colors.grey,
+                                      width: 1,
                                     ),
-                                    Text(
-                                      "-\$${expense["expense"] ?? "0"}",
-                                      style: TextStyle(
-                                        color: Colors.black,
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                Divider(height: 20),
-                                ListView.separated(
-                                  shrinkWrap: true,
-                                  physics: NeverScrollableScrollPhysics(),
-                                  itemBuilder: (_, index) {
-                                    Map<String, dynamic> expenseDetails =
-                                        (expense["list"] as List)[index];
-                                    return ListTile(
-                                      leading: Container(
-                                        height: 45,
-                                        width: 45,
-                                        decoration: BoxDecoration(
-                                          borderRadius: BorderRadius.circular(
-                                            5,
+                                    borderRadius: BorderRadius.circular(5),
+                                  ),
+                                  child: Column(
+                                    children: [
+                                      Row(
+                                        children: [
+                                          Expanded(
+                                            child: Text(
+                                              filteredExpense.title,
+                                              style: TextStyle(
+                                                color: Colors.black,
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                            ),
                                           ),
-                                          color:
-                                              expenseDetails["type"] == "shop"
-                                                  ? Colors.deepPurple.shade200
-                                                  : expenseDetails["type"] ==
-                                                      "electronic"
-                                                  ? Colors.orange.shade200
-                                                  : expenseDetails["type"] ==
-                                                      "transportation"
-                                                  ? Colors.red.shade200
-                                                  : null,
-                                        ),
-                                        child: Center(
-                                          child: Icon(
-                                            expenseDetails["type"] == "shop"
-                                                ? Icons.shopping_cart
-                                                : expenseDetails["type"] ==
-                                                    "electronic"
-                                                ? Icons.phone_android
-                                                : expenseDetails["type"] ==
-                                                    "transportation"
-                                                ? Icons.car_rental
-                                                : null,
-                                            color:
-                                                expenseDetails["type"] == "shop"
-                                                    ? Colors.deepPurple
-                                                    : expenseDetails["type"] ==
-                                                        "electronic"
-                                                    ? Colors.orange
-                                                    : expenseDetails["type"] ==
-                                                        "transportation"
-                                                    ? Colors.red
-                                                    : null,
+                                          Text(
+                                            "\$${filteredExpense.bal}",
+                                            style: TextStyle(
+                                              color: Colors.black,
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.w600,
+                                            ),
                                           ),
-                                        ),
+                                        ],
                                       ),
-                                      title: Text(
-                                        expenseDetails["title"] ?? "",
-                                        style: TextStyle(
-                                          color: Colors.black,
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w600,
-                                        ),
+                                      Divider(height: 20),
+                                      ListView.builder(
+                                        shrinkWrap: true,
+                                        itemCount:
+                                            filteredExpense.expenses.length,
+                                        physics: NeverScrollableScrollPhysics(),
+                                        itemBuilder: (context, index) {
+                                          ExpenseModel expenseDetails =
+                                              filteredExpense.expenses[index];
+                                          return ListTile(
+                                            leading: Container(
+                                              height: 45,
+                                              width: 45,
+                                              decoration: BoxDecoration(
+                                                borderRadius:
+                                                    BorderRadius.circular(5),
+                                                // color:
+                                                //     expenseDetails["type"] ==
+                                                //             "shop"
+                                                //         ? Colors
+                                                //             .deepPurple
+                                                //             .shade200
+                                                //         : expenseDetails["type"] ==
+                                                //             "electronic"
+                                                //         ? Colors.orange.shade200
+                                                //         : expenseDetails["type"] ==
+                                                //             "transportation"
+                                                //         ? Colors.red.shade200
+                                                //         : null,
+                                              ),
+                                              child: Center(
+                                                child: Image.asset(
+                                                  AppConstants.categories
+                                                      .where(
+                                                        (cat) =>
+                                                            expenseDetails
+                                                                .catId ==
+                                                            cat.catId,
+                                                      )
+                                                      .toList()[0]
+                                                      .catImg,
+
+                                                  // color:
+                                                  //     expenseDetails["type"] ==
+                                                  //             "shop"
+                                                  //         ? Colors.deepPurple
+                                                  //         : expenseDetails["type"] ==
+                                                  //             "electronic"
+                                                  //         ? Colors.orange
+                                                  //         : expenseDetails["type"] ==
+                                                  //             "transportation"
+                                                  //         ? Colors.red
+                                                  //         : null,
+                                                ),
+                                              ),
+                                            ),
+                                            title: Text(
+                                              expenseDetails.title,
+                                              style: TextStyle(
+                                                color: Colors.black,
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                            ),
+                                            subtitle: Text(
+                                              expenseDetails.desc,
+                                              style: TextStyle(
+                                                color: Colors.black,
+                                                fontSize: 14,
+                                                fontWeight: FontWeight.w400,
+                                              ),
+                                            ),
+                                            trailing: Text(
+                                              "\$${expenseDetails.amt}",
+                                              style: TextStyle(
+                                                color:
+                                                    expenseDetails.type == 0
+                                                        ? Colors.green
+                                                        : Colors.pink,
+                                                fontSize: 15,
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                            ),
+                                            contentPadding: EdgeInsets.all(0),
+                                          );
+                                        },
                                       ),
-                                      subtitle: Text(
-                                        expenseDetails["subtitle"] ?? "",
-                                        style: TextStyle(
-                                          color: Colors.black,
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.w400,
-                                        ),
-                                      ),
-                                      trailing: Text(
-                                        "-\$${expenseDetails["expense"] ?? "0"}",
-                                        style: TextStyle(
-                                          color: Colors.pink,
-                                          fontSize: 15,
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                      ),
-                                      contentPadding: EdgeInsets.all(0),
-                                    );
-                                  },
-                                  separatorBuilder:
-                                      (_, __) => SizedBox(height: 0),
-                                  itemCount: (expense["list"] as List).length,
-                                ),
-                              ],
-                            ),
-                          );
+                                    ],
+                                  ),
+                                );
+                              },
+                              separatorBuilder: (_, __) => SizedBox(height: 20),
+                              itemCount: state.expenses.length,
+                            );
+                          }
+                          return Center(child: Text("Expenses not Found!!"));
                         },
-                        separatorBuilder: (_, __) => SizedBox(height: 15),
-                        itemCount: expenseList.length,
                       ),
                       SizedBox(height: 20),
                     ],

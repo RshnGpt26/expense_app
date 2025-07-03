@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:expense_app/data/local/model/expense_model.dart';
 import 'package:expense_app/data/local/model/user_model.dart';
 import 'package:expense_app/utils/app_constants.dart';
 import 'package:path/path.dart';
@@ -51,7 +52,7 @@ class DBHelper {
           "create table $tableUser ( $columnUserID integer primary key, $columnUserEmail text, $columnUserName text, $columnUserMobNo text, $columnUserPassword text)",
         );
         db.execute(
-          "create table $tableExpense ( $columnExpenseID integer primary key, $columnUserID integer, $columnExpenseTitle text, $columnExpenseDesc text, $columnExpenseAmount text, $columnExpenseBalance text, $columnExpenseCreatedAt text, $columnExpenseCatID text, $columnExpenseType text)",
+          "create table $tableExpense ( $columnExpenseID integer primary key, $columnUserID integer, $columnExpenseTitle text, $columnExpenseDesc text, $columnExpenseAmount text, $columnExpenseBalance text, $columnExpenseCreatedAt text, $columnExpenseCatID integer, $columnExpenseType integer)",
         );
       },
     );
@@ -101,5 +102,27 @@ class DBHelper {
       whereArgs: [email],
     );
     return users.isNotEmpty;
+  }
+
+  Future<bool> addExpense({required ExpenseModel expense}) async {
+    var db = await initDB();
+
+    int rowsAffected = await db.insert(tableExpense, expense.toMap());
+
+    return rowsAffected > 0;
+  }
+
+  Future<List<Map<String, dynamic>>> fetchUsersExpenses({
+    required int userId,
+  }) async {
+    var db = await initDB();
+
+    List<Map<String, dynamic>> list = await db.query(
+      tableExpense,
+      where: "$columnUserID = ?",
+      whereArgs: [userId],
+    );
+
+    return list;
   }
 }

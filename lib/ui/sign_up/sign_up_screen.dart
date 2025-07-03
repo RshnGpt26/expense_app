@@ -141,7 +141,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 ),
                 suffixIcon: IconButton(
                   icon: Icon(
-                    !obscurePassword ? Icons.visibility : Icons.visibility_off,
+                    obscurePassword ? Icons.visibility : Icons.visibility_off,
                   ),
                   onPressed: () {
                     setState(() {
@@ -175,7 +175,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                 ),
                 suffixIcon: IconButton(
                   icon: Icon(
-                    !obscureConfirmPassword
+                    obscureConfirmPassword
                         ? Icons.visibility
                         : Icons.visibility_off,
                   ),

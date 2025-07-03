@@ -5,8 +5,8 @@ class ExpenseModel {
   int userId;
   String title;
   String desc;
-  num amt;
-  num bal;
+  String amt;
+  String bal;
   int catId;
   String createdAt;
   int type;
