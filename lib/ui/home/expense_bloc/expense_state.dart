@@ -1,5 +1,3 @@
-import 'package:expense_app/data/local/model/expense_model.dart';
-
 import '../../../data/local/model/filtered_expense_model.dart';
 
 abstract class ExpenseState {}

@@ -26,7 +26,7 @@ class ExpenseBloc extends Bloc<ExpenseEvent, ExpenseState> {
       SharedPreferences pref = await SharedPreferences.getInstance();
       int userId = pref.getInt(AppConstants.prefUserIdKey) ?? -1;
       List<FilteredExpenseModel> expenseList = await expenseRepository
-          .fetchUsersExpenses(userId: userId);
+          .fetchUsersExpenses(userId: userId, filter: event.filter);
       emit(ExpenseLoadedState(expenses: expenseList));
     });
   }

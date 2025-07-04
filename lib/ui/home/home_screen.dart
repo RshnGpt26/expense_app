@@ -52,11 +52,13 @@ class _HomeScreenState extends State<HomeScreen> {
   // ];
 
   bool isLoading = false;
+  String selectedFilter = "Daily";
+  List<String> filters = ["Daily", "Monthly", "Yearly", "Category Wise"];
 
   @override
   void initState() {
     super.initState();
-    context.read<ExpenseBloc>().add(ExpenseFetchEvent());
+    context.read<ExpenseBloc>().add(ExpenseFetchEvent(filter: selectedFilter));
   }
 
   @override
@@ -228,9 +230,9 @@ class _HomeScreenState extends State<HomeScreen> {
                             child: DropdownButtonHideUnderline(
                               child: DropdownButton<String>(
                                 icon: Icon(Icons.keyboard_arrow_down),
-                                value: "This Month",
+                                value: selectedFilter,
                                 items:
-                                    ["This Month"]
+                                    filters
                                         .map(
                                           (e) => DropdownMenuItem(
                                             value: e,
@@ -245,7 +247,14 @@ class _HomeScreenState extends State<HomeScreen> {
                                           ),
                                         )
                                         .toList(),
-                                onChanged: (value) {},
+                                onChanged: (value) {
+                                  setState(() {
+                                    selectedFilter = value!;
+                                  });
+                                  context.read<ExpenseBloc>().add(
+                                    ExpenseFetchEvent(filter: selectedFilter),
+                                  );
+                                },
                               ),
                             ),
                           ),

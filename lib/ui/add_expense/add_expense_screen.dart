@@ -335,7 +335,9 @@ class AddExpenseScreen extends StatelessWidget {
                   isAdding = true;
                 } else if (state is ExpenseAddedState) {
                   isAdding = false;
-                  context.read<ExpenseBloc>().add(ExpenseFetchEvent());
+                  context.read<ExpenseBloc>().add(
+                    ExpenseFetchEvent(filter: "Daily"),
+                  );
                   Navigator.pop(context);
                 } else if (state is ExpenseAddFailedState) {
                   isAdding = false;

@@ -3,7 +3,8 @@ import 'package:expense_app/data/local/model/expense_model.dart';
 abstract class ExpenseEvent {}
 
 class ExpenseFetchEvent extends ExpenseEvent {
-  ExpenseFetchEvent();
+  String filter;
+  ExpenseFetchEvent({required this.filter});
 }
 
 class ExpenseAddEvent extends ExpenseEvent {
