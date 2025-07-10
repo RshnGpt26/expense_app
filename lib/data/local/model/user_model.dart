@@ -1,4 +1,4 @@
-import 'package:expense_app/data/local/helper/db_helper.dart';
+import '../helper/db_helper.dart';
 
 class UserModel {
   int? id;

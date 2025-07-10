@@ -1,13 +1,43 @@
+import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
-class StatisticScreen extends StatelessWidget {
-  StatisticScreen({super.key});
+import '../home/expense_bloc/expense_bloc.dart';
+import '../home/expense_bloc/expense_event.dart';
+import '../home/expense_bloc/expense_state.dart';
 
+class StatisticScreen extends StatefulWidget {
+  const StatisticScreen({super.key});
+
+  @override
+  State<StatisticScreen> createState() => _StatisticScreenState();
+}
+
+class _StatisticScreenState extends State<StatisticScreen> {
   final List<Map<String, dynamic>> expenseList = [
     {"type": "shop", "title": "Shop", "expense": 1190},
     {"type": "transportation", "title": "Transportation", "expense": 867},
     {"type": "electronic", "title": "Electronic", "expense": 867},
   ];
+
+  // final List<FilteredExpenseModel> allExp = [
+  //   FilteredExpenseModel(title: "Grocery", bal: 1000, expenses: []),
+  //   FilteredExpenseModel(title: "Petrol", bal: 7000, expenses: []),
+  //   FilteredExpenseModel(title: "Shopping", bal: 10000, expenses: []),
+  //   FilteredExpenseModel(title: "Recharge", bal: 2400, expenses: []),
+  //   FilteredExpenseModel(title: "Coffee", bal: 2700, expenses: []),
+  //   FilteredExpenseModel(title: "Restaurant", bal: 7700, expenses: []),
+  // ];
+
+  bool isLoading = false;
+  String selectedFilter = "Daily";
+  List<String> filters = ["Daily", "Monthly", "Yearly", "Category Wise"];
+
+  @override
+  void initState() {
+    super.initState();
+    context.read<ExpenseBloc>().add(ExpenseFetchEvent(filter: selectedFilter));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -166,9 +196,9 @@ class StatisticScreen extends StatelessWidget {
                             child: DropdownButtonHideUnderline(
                               child: DropdownButton<String>(
                                 icon: Icon(Icons.keyboard_arrow_down),
-                                value: "Week",
+                                value: selectedFilter,
                                 items:
-                                    ["Week"]
+                                    filters
                                         .map(
                                           (e) => DropdownMenuItem(
                                             value: e,
@@ -183,7 +213,14 @@ class StatisticScreen extends StatelessWidget {
                                           ),
                                         )
                                         .toList(),
-                                onChanged: (value) {},
+                                onChanged: (value) {
+                                  setState(() {
+                                    selectedFilter = value!;
+                                  });
+                                  context.read<ExpenseBloc>().add(
+                                    ExpenseFetchEvent(filter: selectedFilter),
+                                  );
+                                },
                               ),
                             ),
                           ),
@@ -195,6 +232,60 @@ class StatisticScreen extends StatelessWidget {
                           color: Colors.grey,
                           fontSize: 14,
                           fontWeight: FontWeight.w400,
+                        ),
+                      ),
+                      SizedBox(height: 20),
+                      SizedBox(
+                        height: 200,
+                        child: BlocBuilder<ExpenseBloc, ExpenseState>(
+                          builder: (context, state) {
+                            if (state is ExpenseLoadingState) {
+                              return Center(child: CircularProgressIndicator());
+                            }
+                            if (state is ExpenseLoadedState) {
+                              if (state.expenses.isEmpty) {
+                                return Center(
+                                  child: Text("Expenses not added Yet!!"),
+                                );
+                              }
+                              List<BarChartGroupData> mBar = [];
+
+                              for (int i = 0; i < state.expenses.length; i++) {
+                                mBar.add(
+                                  BarChartGroupData(
+                                    x: i,
+                                    barRods: [
+                                      _barUI(
+                                        toY: state.expenses[i].bal.toDouble(),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              }
+                              return BarChart(
+                                BarChartData(
+                                  titlesData: FlTitlesData(
+                                    bottomTitles: AxisTitles(
+                                      sideTitles: SideTitles(
+                                        showTitles: true,
+                                        getTitlesWidget: (value, meta) {
+                                          return Text(
+                                            state.expenses[value.toInt()].title,
+                                            style: TextStyle(fontSize: 9),
+                                          );
+                                        },
+                                      ),
+                                    ),
+                                  ),
+                                  barGroups: mBar,
+                                  maxY: 1000,
+                                  baselineY: 500,
+                                  minY: -9500,
+                                ),
+                              );
+                            }
+                            return Center(child: Text("Expenses not Found!!"));
+                          },
                         ),
                       ),
                       SizedBox(height: 20),
@@ -320,6 +411,15 @@ class StatisticScreen extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+
+  BarChartRodData _barUI({required double toY}) {
+    return BarChartRodData(
+      toY: toY,
+      color: Colors.blue,
+      width: 35,
+      borderRadius: BorderRadius.vertical(top: Radius.circular(3)),
     );
   }
 }

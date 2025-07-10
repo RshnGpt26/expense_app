@@ -1,4 +1,4 @@
-import 'package:expense_app/data/local/model/user_model.dart';
+import '../../../data/local/model/user_model.dart';
 
 abstract class UserEvent {}
 

@@ -1,8 +1,8 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import 'package:expense_app/data/local/repository/user_repository.dart';
-import 'package:expense_app/ui/sign_up/bloc/user_event.dart';
-import 'package:expense_app/ui/sign_up/bloc/user_state.dart';
+import '../../../data/local/repository/user_repository.dart';
+import 'user_event.dart';
+import 'user_state.dart';
 
 class UserBloc extends Bloc<UserEvent, UserState> {
   UserRepository userRepository;

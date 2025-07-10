@@ -1,9 +1,9 @@
-import 'package:expense_app/ui/sign_up/bloc/user_bloc.dart';
-import 'package:expense_app/ui/sign_up/bloc/user_event.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../utils/routes/app_routes.dart';
+import '../sign_up/bloc/user_bloc.dart';
+import '../sign_up/bloc/user_event.dart';
 import '../sign_up/bloc/user_state.dart';
 
 class LoginScreen extends StatefulWidget {

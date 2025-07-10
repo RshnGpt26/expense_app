@@ -1,6 +1,6 @@
-import 'package:expense_app/utils/routes/app_routes.dart';
 import 'package:flutter/material.dart';
 
+import '../../utils/routes/app_routes.dart';
 import '../statistic/statistic_screen.dart';
 import 'home_screen.dart';
 

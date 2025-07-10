@@ -1,7 +1,7 @@
-import 'package:expense_app/ui/add_expense/add_expense_screen.dart';
-import 'package:expense_app/ui/home/main_screen.dart';
 import 'package:flutter/widgets.dart';
 
+import '../../ui/add_expense/add_expense_screen.dart';
+import '../../ui/home/main_screen.dart';
 import '../../ui/login/login_screen.dart';
 import '../../ui/sign_up/sign_up_screen.dart';
 import '../../ui/splash/splash_screen.dart';

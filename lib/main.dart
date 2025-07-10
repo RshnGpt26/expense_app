@@ -1,11 +1,11 @@
-import 'package:expense_app/data/local/helper/db_helper.dart';
-import 'package:expense_app/data/local/repository/expense_repository.dart';
-import 'package:expense_app/data/local/repository/user_repository.dart';
-import 'package:expense_app/ui/home/expense_bloc/expense_bloc.dart';
-import 'package:expense_app/ui/sign_up/bloc/user_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import 'data/local/helper/db_helper.dart';
+import 'data/local/repository/expense_repository.dart';
+import 'data/local/repository/user_repository.dart';
+import 'ui/home/expense_bloc/expense_bloc.dart';
+import 'ui/sign_up/bloc/user_bloc.dart';
 import 'utils/routes/app_routes.dart';
 
 void main() {

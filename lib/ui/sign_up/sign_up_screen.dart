@@ -1,10 +1,11 @@
-import 'package:expense_app/data/local/model/user_model.dart';
-import 'package:expense_app/ui/sign_up/bloc/user_bloc.dart';
-import 'package:expense_app/ui/sign_up/bloc/user_event.dart';
-import 'package:expense_app/ui/sign_up/bloc/user_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+
+import '../../data/local/model/user_model.dart';
+import 'bloc/user_bloc.dart';
+import 'bloc/user_event.dart';
+import 'bloc/user_state.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});

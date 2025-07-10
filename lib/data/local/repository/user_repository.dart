@@ -1,5 +1,4 @@
-import 'package:expense_app/data/local/helper/db_helper.dart';
-
+import '../helper/db_helper.dart';
 import '../model/user_model.dart';
 
 class UserRepository {

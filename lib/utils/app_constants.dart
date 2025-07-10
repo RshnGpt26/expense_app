@@ -1,4 +1,4 @@
-import 'package:expense_app/data/local/model/category_model.dart';
+import '../data/local/model/category_model.dart';
 
 class AppConstants {
   static const String prefUserIdKey = "uid";
