@@ -388,9 +388,7 @@ class _StatisticScreenState extends State<StatisticScreen> {
                           }
                           if (state is ExpenseLoadedState) {
                             if (state.expenses.isEmpty) {
-                              return Center(
-                                child: Text("Expenses not added Yet!!"),
-                              );
+                              return SizedBox();
                             }
                             FilteredExpenseModel filteredExpense =
                                 state.expenses[selectedBarIndex];
