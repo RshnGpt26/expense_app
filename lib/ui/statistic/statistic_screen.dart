@@ -222,6 +222,7 @@ class _StatisticScreenState extends State<StatisticScreen> {
                                 onChanged: (value) {
                                   setState(() {
                                     selectedFilter = value!;
+                                    selectedBarIndex = 0;
                                   });
                                   context.read<ExpenseBloc>().add(
                                     ExpenseFetchEvent(filter: selectedFilter),
