@@ -27,7 +27,16 @@ class ExpenseBloc extends Bloc<ExpenseEvent, ExpenseState> {
       int userId = pref.getInt(AppConstants.prefUserIdKey) ?? -1;
       List<FilteredExpenseModel> expenseList = await expenseRepository
           .fetchUsersExpenses(userId: userId, filter: event.filter);
-      emit(ExpenseLoadedState(expenses: expenseList));
+      num totalExpenses = 0;
+      for (FilteredExpenseModel expense in expenseList) {
+        totalExpenses += expense.bal;
+      }
+      emit(
+        ExpenseLoadedState(
+          totalExpenses: totalExpenses.toInt(),
+          expenses: expenseList,
+        ),
+      );
     });
   }
 }

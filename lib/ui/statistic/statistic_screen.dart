@@ -1,7 +1,12 @@
+import 'dart:developer';
+
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../data/local/model/expense_model.dart';
+import '../../data/local/model/filtered_expense_model.dart';
+import '../../utils/app_constants.dart';
 import '../home/expense_bloc/expense_bloc.dart';
 import '../home/expense_bloc/expense_event.dart';
 import '../home/expense_bloc/expense_state.dart';
@@ -30,6 +35,7 @@ class _StatisticScreenState extends State<StatisticScreen> {
   // ];
 
   bool isLoading = false;
+  int selectedBarIndex = 0;
   String selectedFilter = "Daily";
   List<String> filters = ["Daily", "Monthly", "Yearly", "Category Wise"];
 
@@ -248,45 +254,271 @@ class _StatisticScreenState extends State<StatisticScreen> {
                                   child: Text("Expenses not added Yet!!"),
                                 );
                               }
-                              List<BarChartGroupData> mBar = [];
+                              if (selectedFilter == "Daily") {
+                                List<PieChartSectionData> mPie = [];
 
-                              for (int i = 0; i < state.expenses.length; i++) {
-                                mBar.add(
-                                  BarChartGroupData(
-                                    x: i,
-                                    barRods: [
-                                      _barUI(
-                                        toY: state.expenses[i].bal.toDouble(),
+                                for (
+                                  int i = 0;
+                                  i < state.expenses.length;
+                                  i++
+                                ) {
+                                  mPie.add(
+                                    PieChartSectionData(
+                                      radius: 70,
+                                      value:
+                                          state.expenses[i].bal < 0
+                                              ? state.expenses[i].bal * -1
+                                              : state.expenses[i].bal
+                                                  .toDouble(),
+                                      color:
+                                          Colors.primaries[i %
+                                              Colors.primaries.length],
+                                      badgeWidget: Text(
+                                        (state.expenses[i].bal < 0
+                                                ? state.expenses[i].bal * -1
+                                                : state.expenses[i].bal)
+                                            .toString(),
+                                        style: TextStyle(color: Colors.white),
                                       ),
-                                    ],
+                                      showTitle: true,
+                                      title: state.expenses[i].title,
+                                      titlePositionPercentageOffset: 1.2,
+                                    ),
+                                  );
+                                }
+                                return PieChart(
+                                  PieChartData(
+                                    sections: mPie,
+                                    centerSpaceRadius: 5,
+                                    pieTouchData: PieTouchData(
+                                      touchCallback: (p0, p1) {
+                                        if (mounted) {
+                                          setState(() {
+                                            selectedBarIndex =
+                                                p1
+                                                    ?.touchedSection
+                                                    ?.touchedSectionIndex ??
+                                                0;
+                                          });
+                                        }
+                                      },
+                                    ),
+                                  ),
+                                );
+                              } else {
+                                List<BarChartGroupData> mBar = [];
+
+                                for (
+                                  int i = 0;
+                                  i < state.expenses.length;
+                                  i++
+                                ) {
+                                  mBar.add(
+                                    BarChartGroupData(
+                                      x: i,
+                                      barRods: [
+                                        _barUI(
+                                          toY:
+                                              state.expenses[i].bal < 0
+                                                  ? state.expenses[i].bal * -1.0
+                                                  : state.expenses[i].bal
+                                                      .toDouble(),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                }
+                                return BarChart(
+                                  BarChartData(
+                                    titlesData: FlTitlesData(
+                                      bottomTitles: AxisTitles(
+                                        sideTitles: SideTitles(
+                                          showTitles: true,
+                                          getTitlesWidget: (value, meta) {
+                                            return Text(
+                                              state
+                                                  .expenses[value.toInt()]
+                                                  .title,
+                                              style: TextStyle(fontSize: 9),
+                                            );
+                                          },
+                                        ),
+                                      ),
+                                    ),
+                                    barTouchData: BarTouchData(
+                                      touchCallback: (p0, p1) {
+                                        if (mounted) {
+                                          setState(() {
+                                            selectedBarIndex =
+                                                p1
+                                                    ?.spot
+                                                    ?.touchedBarGroupIndex ??
+                                                0;
+                                          });
+                                        }
+                                      },
+                                    ),
+                                    barGroups: mBar,
+                                    maxY: 10000,
+                                    baselineY: 500,
+                                    minY: 0,
                                   ),
                                 );
                               }
-                              return BarChart(
-                                BarChartData(
-                                  titlesData: FlTitlesData(
-                                    bottomTitles: AxisTitles(
-                                      sideTitles: SideTitles(
-                                        showTitles: true,
-                                        getTitlesWidget: (value, meta) {
-                                          return Text(
-                                            state.expenses[value.toInt()].title,
-                                            style: TextStyle(fontSize: 9),
-                                          );
-                                        },
-                                      ),
-                                    ),
-                                  ),
-                                  barGroups: mBar,
-                                  maxY: 1000,
-                                  baselineY: 500,
-                                  minY: -9500,
-                                ),
-                              );
                             }
                             return Center(child: Text("Expenses not Found!!"));
                           },
                         ),
+                      ),
+                      SizedBox(height: 20),
+                      BlocBuilder<ExpenseBloc, ExpenseState>(
+                        // listener: (context, state) {
+                        //   if (state is ExpenseInitialState) {
+                        //     isLoading = false;
+                        //   } else if (state is ExpenseLoadingState) {
+                        //     isLoading = true;
+                        //   } else if (state is ExpenseLoadedState) {
+                        //     isLoading = false;
+                        //     state.expenses;
+                        //   }
+                        // },
+                        builder: (context, state) {
+                          if (state is ExpenseLoadingState) {
+                            return Center(child: CircularProgressIndicator());
+                          }
+                          if (state is ExpenseLoadedState) {
+                            if (state.expenses.isEmpty) {
+                              return Center(
+                                child: Text("Expenses not added Yet!!"),
+                              );
+                            }
+                            FilteredExpenseModel filteredExpense =
+                                state.expenses[selectedBarIndex];
+                            return Container(
+                              padding: EdgeInsets.all(20),
+                              decoration: BoxDecoration(
+                                border: Border.all(
+                                  color: Colors.grey,
+                                  width: 1,
+                                ),
+                                borderRadius: BorderRadius.circular(5),
+                              ),
+                              child: Column(
+                                children: [
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: Text(
+                                          filteredExpense.title,
+                                          style: TextStyle(
+                                            color: Colors.black,
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                      ),
+                                      Text(
+                                        "\$${filteredExpense.bal}",
+                                        style: TextStyle(
+                                          color: Colors.black,
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  Divider(height: 20),
+                                  ListView.builder(
+                                    shrinkWrap: true,
+                                    itemCount: filteredExpense.expenses.length,
+                                    physics: NeverScrollableScrollPhysics(),
+                                    itemBuilder: (context, index) {
+                                      ExpenseModel expenseDetails =
+                                          filteredExpense.expenses[index];
+                                      return ListTile(
+                                        leading: Container(
+                                          height: 45,
+                                          width: 45,
+                                          decoration: BoxDecoration(
+                                            borderRadius: BorderRadius.circular(
+                                              5,
+                                            ),
+                                            // color:
+                                            //     expenseDetails["type"] ==
+                                            //             "shop"
+                                            //         ? Colors
+                                            //             .deepPurple
+                                            //             .shade200
+                                            //         : expenseDetails["type"] ==
+                                            //             "electronic"
+                                            //         ? Colors.orange.shade200
+                                            //         : expenseDetails["type"] ==
+                                            //             "transportation"
+                                            //         ? Colors.red.shade200
+                                            //         : null,
+                                          ),
+                                          child: Center(
+                                            child: Image.asset(
+                                              AppConstants.categories
+                                                  .where(
+                                                    (cat) =>
+                                                        expenseDetails.catId ==
+                                                        cat.catId,
+                                                  )
+                                                  .toList()[0]
+                                                  .catImg,
+
+                                              // color:
+                                              //     expenseDetails["type"] ==
+                                              //             "shop"
+                                              //         ? Colors.deepPurple
+                                              //         : expenseDetails["type"] ==
+                                              //             "electronic"
+                                              //         ? Colors.orange
+                                              //         : expenseDetails["type"] ==
+                                              //             "transportation"
+                                              //         ? Colors.red
+                                              //         : null,
+                                            ),
+                                          ),
+                                        ),
+                                        title: Text(
+                                          expenseDetails.title,
+                                          style: TextStyle(
+                                            color: Colors.black,
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                        subtitle: Text(
+                                          expenseDetails.desc,
+                                          style: TextStyle(
+                                            color: Colors.black,
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w400,
+                                          ),
+                                        ),
+                                        trailing: Text(
+                                          "\$${expenseDetails.amt}",
+                                          style: TextStyle(
+                                            color:
+                                                expenseDetails.type == 0
+                                                    ? Colors.green
+                                                    : Colors.pink,
+                                            fontSize: 15,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                        contentPadding: EdgeInsets.all(0),
+                                      );
+                                    },
+                                  ),
+                                ],
+                              ),
+                            );
+                          }
+                          return Center(child: Text("Expenses not Found!!"));
+                        },
                       ),
                       SizedBox(height: 20),
                       Text(

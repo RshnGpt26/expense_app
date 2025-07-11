@@ -16,6 +16,7 @@ class ExpenseAddFailedState extends ExpenseState {
 class ExpenseLoadingState extends ExpenseState {}
 
 class ExpenseLoadedState extends ExpenseState {
+  int totalExpenses;
   List<FilteredExpenseModel> expenses;
-  ExpenseLoadedState({required this.expenses});
+  ExpenseLoadedState({required this.totalExpenses, required this.expenses});
 }

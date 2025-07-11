@@ -18,39 +18,6 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  // final List<Map<String, dynamic>> expenseList = [
-  //   {
-  //     "date_time": "Tuesday, 14",
-  //     "expense": 1380,
-  //     "list": [
-  //       {
-  //         "type": "shop",
-  //         "title": "Shop",
-  //         "subtitle": "Buy new clothes",
-  //         "expense": 90,
-  //       },
-  //       {
-  //         "type": "electronic",
-  //         "title": "Electronic",
-  //         "subtitle": "Buy new iPhone 14",
-  //         "expense": 1290,
-  //       },
-  //     ],
-  //   },
-  //   {
-  //     "date_time": "Monday, 13",
-  //     "expense": 60,
-  //     "list": [
-  //       {
-  //         "type": "transportation",
-  //         "title": "Transportation",
-  //         "subtitle": "Trip to malang",
-  //         "expense": 60,
-  //       },
-  //     ],
-  //   },
-  // ];
-
   bool isLoading = false;
   String selectedFilter = "Daily";
   List<String> filters = ["Daily", "Monthly", "Yearly", "Category Wise"];
@@ -274,59 +241,69 @@ class _HomeScreenState extends State<HomeScreen> {
                               horizontal: 20,
                               vertical: 25,
                             ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  "Expense total",
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w400,
-                                  ),
-                                ),
-                                SizedBox(height: 10),
-                                Text(
-                                  "\$3,734",
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 40,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                                SizedBox(height: 5),
-                                Row(
+                            child: BlocBuilder<ExpenseBloc, ExpenseState>(
+                              builder: (context, state) {
+                                int total = 0;
+                                if (state is ExpenseLoadedState) {
+                                  total = state.totalExpenses;
+                                }
+                                return Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Container(
-                                      decoration: BoxDecoration(
-                                        color: Colors.red,
-                                        borderRadius: BorderRadius.circular(6),
-                                      ),
-                                      padding: EdgeInsets.symmetric(
-                                        horizontal: 8,
-                                        vertical: 4,
-                                      ),
-                                      child: Text(
-                                        "+\$240",
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.w500,
-                                          fontSize: 13,
-                                        ),
-                                      ),
-                                    ),
-                                    SizedBox(width: 8),
                                     Text(
-                                      "than last month",
+                                      "Expense total",
                                       style: TextStyle(
                                         color: Colors.white,
-                                        fontSize: 13,
+                                        fontSize: 16,
                                         fontWeight: FontWeight.w400,
                                       ),
                                     ),
+                                    SizedBox(height: 10),
+                                    Text(
+                                      "\$${(total * -1).toString()}",
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 40,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                    SizedBox(height: 5),
+                                    Row(
+                                      children: [
+                                        Container(
+                                          decoration: BoxDecoration(
+                                            color: Colors.red,
+                                            borderRadius: BorderRadius.circular(
+                                              6,
+                                            ),
+                                          ),
+                                          padding: EdgeInsets.symmetric(
+                                            horizontal: 8,
+                                            vertical: 4,
+                                          ),
+                                          child: Text(
+                                            "+\$240",
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.w500,
+                                              fontSize: 13,
+                                            ),
+                                          ),
+                                        ),
+                                        SizedBox(width: 8),
+                                        Text(
+                                          "than last month",
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.w400,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                   ],
-                                ),
-                              ],
+                                );
+                              },
                             ),
                           ),
                           Positioned(
