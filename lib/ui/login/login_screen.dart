@@ -15,7 +15,7 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   bool obscurePassword = true;
-  bool isLoading = false;
+  bool? isLoading;
 
   final TextEditingController _email = TextEditingController();
   final TextEditingController _password = TextEditingController();
@@ -125,6 +125,12 @@ class _LoginScreenState extends State<LoginScreen> {
             ),
             SizedBox(height: 20),
             BlocConsumer<UserBloc, UserState>(
+              listenWhen: (previous, current) {
+                return isLoading != null;
+              },
+              buildWhen: (previous, current) {
+                return isLoading != null;
+              },
               listener: (context, state) {
                 if (state is UserInitialState) {
                   isLoading = false;
@@ -148,7 +154,7 @@ class _LoginScreenState extends State<LoginScreen> {
               builder: (context, state) {
                 return ElevatedButton(
                   child:
-                      isLoading
+                      isLoading != null && isLoading!
                           ? Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
@@ -161,6 +167,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   onPressed: () {
                     String email = _email.text.trim();
                     String password = _password.text.trim();
+                    isLoading = false;
                     context.read<UserBloc>().add(
                       LoginEvent(email: email, password: password),
                     );
@@ -182,6 +189,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 TextButton(
                   onPressed: () {
+                    isLoading = null;
                     Navigator.pushNamed(context, AppRoutes.registerPage);
                   },
                   child: Text(
